@@ -6,6 +6,7 @@
 #include <set>
 #include <functional>
 #include <cstdint>
+#include <string>
 
 uint16_t readLittleEndianWord(std::ifstream& stream)
 {

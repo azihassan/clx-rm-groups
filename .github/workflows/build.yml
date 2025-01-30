@@ -1,0 +1,11 @@
+name: Build
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v1
+      - name: Build
+        run: g++ -std=c++11 clx-rm-groups.cpp -o clx-rm-groups && ./clx-rm-groups

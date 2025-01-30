@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  create_release_job:
+    strategy:
+      matrix:
+        version: [ { os: ubuntu-22.04, suffix: x86_64, extension: '' }, { os: windows-latest, suffix: win64, extension: '.exe' }, { os: macos-latest, suffix: macos, extension: '' }]
+
+    runs-on: ${{ matrix.version.os }}
+    steps:
+      - uses: actions/checkout@v1
+      - uses: ilammy/msvc-dev-cmd@v1.4.1
+        if: matrix.version.suffix == 'win64'
+
+      - name: Build release
+        if: matrix.version.suffix == 'win64'
+        run: cl /EHsc clx-rm-groups.cpp && .\clx-rm-groups.exe
+
+      - name: Build release
+        if: matrix.version.suffix == 'x86_64' || matrix.version.suffix == 'macos'
+        run: g++ -std=c++11 clx-rm-groups.cpp -o clx-rm-groups${{ matrix.version.extension }}
+
+      - name: Prepare assets (Windows)
+        if: matrix.version.suffix == 'win64'
+        run: |
+          7z a clx-rm-groups-${{ matrix.version.suffix }}.zip clx-rm-groups${{ matrix.version.extension }}
+
+      - name: Prepare assets (Linux & MacOS)
+        if: matrix.version.suffix == 'x86_64' || matrix.version.suffix == 'macos'
+        run: |
+          zip clx-rm-groups-${{ matrix.version.suffix }}.zip clx-rm-groups${{ matrix.version.extension }}
+
+      - name: Upload release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: New release of clx-rm-groups ${{ github.ref_name }}
+          draft: true
+          prerelease: false
+          body_path: CHANGELOG.md
+          files: 'clx-rm-groups*.zip'
